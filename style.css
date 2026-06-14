@@ -142,3 +142,10 @@ main{min-height:60vh}
 .foot-links{display:flex;gap:1.5rem;justify-content:center;margin:1rem 0;flex-wrap:wrap}
 .foot-links a{border-bottom:1px solid transparent}.foot-links a:hover{border-color:var(--terra)}
 .fine{font-size:.82rem;opacity:.6;max-width:40ch;margin:1rem auto 0}
+
+/* PILLS — soft, muted, premium. Positioned top-right of card image. */
+.pill{position:absolute;top:.7rem;right:.7rem;font-size:.7rem;font-weight:600;
+  letter-spacing:.04em;padding:.28rem .65rem;border-radius:99px;backdrop-filter:blur(2px)}
+.pill-green{background:#E3EFE6;color:#1F6E68}
+.pill-red{background:#F6E3DE;color:#A8472A}
+.pill-neutral{background:#EFE7D6;color:#5A4A3E}

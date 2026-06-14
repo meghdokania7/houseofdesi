@@ -58,6 +58,15 @@ def clean(rows):
 # Images
 # ----------------------------------------------------------------------
 
+def clean_components(rows):
+    """Clean the Stack_Components junction rows: strip fields, keep rows with both keys."""
+    out=[]
+    for row in rows:
+        r={(k or "").strip():(v or "").strip() for k,v in row.items()}
+        if r.get("stack_sku") and r.get("bangle_sku"):
+            out.append(r)
+    return out
+
 def images_for(sku):
     """Return web paths to all images in /images/<sku>/, sorted."""
     folder = IMAGES / sku
@@ -92,24 +101,49 @@ def e(s):
 # Stack availability (computed, not manually set)
 # ----------------------------------------------------------------------
 
-def stack_state(stack, bangles_by_sku):
-    """Decide how a stack should render based on its components and display_status."""
+def in_stock(item):
+    """An item is in stock when stock_qty > 0. Replaces the old in_stock column."""
+    try:
+        return float(item.get("stock_qty", 0) or 0) > 0
+    except (ValueError, TypeError):
+        return False
+
+def stack_components(stack_sku, components, bangles_by_sku):
+    """Return list of component bangle rows for a stack (from the junction table),
+    expanded so the detail page can list them. Uses qty_required for availability."""
+    rows = [c for c in components if c.get("stack_sku") == stack_sku]
+    return rows
+
+def stack_state(stack, components, bangles_by_sku):
+    """Compute how a stack renders.
+    display_status: 'hidden' -> never shown. 'live' (default) -> shown,
+    auto 'sold' if any component lacks enough stock for its qty_required."""
     status = (stack.get("display_status") or "live").lower()
     if status == "hidden":
         return "hidden"
-    comps = [s.strip() for s in stack.get("component_skus", "").split(",") if s.strip()]
-    all_in_stock = all(
-        (bangles_by_sku.get(c, {}).get("in_stock", "no").lower() == "yes")
-        for c in comps
-    ) if comps else False
-    if status == "sold_visible":
-        return "available" if all_in_stock else "sold"
-    # status == live
-    return "available" if all_in_stock else "hidden"
+    comps = [c for c in components if c.get("stack_sku") == stack["sku"]]
+    if not comps:
+        return "sold"  # a stack with no recipe can't be fulfilled
+    for c in comps:
+        bangle = bangles_by_sku.get(c.get("bangle_sku", "").strip())
+        try:
+            need = float(c.get("qty_required", 1) or 1)
+            have = float(bangle.get("stock_qty", 0) or 0) if bangle else 0
+        except (ValueError, TypeError):
+            need, have = 1, 0
+        if not bangle or have < need:
+            return "sold"   # default: out-of-stock component -> SOLD OUT (not hidden)
+    return "available"
 
-# data containers populated in main()
-DATA = {}
-PY_BUILD_PLACEHOLDER = True
+def pill_html(item):
+    """Render an optional pill from pill_text / pill_colour. Empty text -> no pill."""
+    text = (item.get("pill_text") or "").strip()
+    if not text:
+        return ""
+    colour = (item.get("pill_colour") or "neutral").strip().lower()
+    if colour not in ("green", "red", "neutral"):
+        colour = "neutral"
+    return f'<span class="pill pill-{colour}">{e(text)}</span>'
 
 # ----------------------------------------------------------------------
 # Main orchestration  (appended; imports render lazily to avoid cycle)
@@ -121,6 +155,7 @@ def main():
     bangles = clean(load_csv("bangles"))
     stacks  = clean(load_csv("stacks"))
     other   = clean(load_csv("other"))
+    components = clean_components(load_csv("components"))
 
     bangles_by_sku = {b["sku"]: b for b in bangles}
 
@@ -138,47 +173,47 @@ def main():
 
     pages_written = 0
 
-    # ---- Stacks: compute state, render detail + collect cards ----
+    # ---- Stacks: compute state from junction table, render detail + cards ----
     stack_cards = []
     featured = []
     for s in stacks:
-        state = stack_state(s, bangles_by_sku)
+        state = stack_state(s, components, bangles_by_sku)
         if state == "hidden":
             continue
-        comps = [bangles_by_sku[c.strip()] for c in s.get("component_skus","").split(",")
-                 if c.strip() in bangles_by_sku]
+        comps = [bangles_by_sku[c["bangle_sku"].strip()]
+                 for c in components
+                 if c.get("stack_sku") == s["sku"] and c.get("bangle_sku","").strip() in bangles_by_sku]
         imgs = images_for(s["sku"])
-        badge = "Sold" if state == "sold" else ""
+        badge = "Sold out" if state == "sold" else ""
         href = f"p-{s['sku']}.html"
-        stack_cards.append(R.card(href, imgs[0] if imgs else "", s["name"], money(s["price"]), badge))
-        # detail page
+        stack_cards.append(R.card(href, imgs[0] if imgs else "", s["name"], money(s["price"]), badge, pill_html(s)))
         (OUT / href).write_text(R.product_page(s, "stack", comps), encoding="utf-8")
         pages_written += 1
         if state == "available" and len(featured) < 8:
-            featured.append(R.card(href, imgs[0] if imgs else "", s["name"], money(s["price"])))
+            featured.append(R.card(href, imgs[0] if imgs else "", s["name"], money(s["price"]), "", pill_html(s)))
 
-    # ---- Single bangles: exclude brass (not sold individually) ----
+    # ---- Single bangles: only sell_solo=yes (brass etc. excluded by her choice) ----
     bangle_cards = []
     for b in bangles:
-        if b.get("type","").lower() == "brass":
-            continue  # brass only in stacks
+        if (b.get("sell_solo","").lower() != "yes"):
+            continue  # not listed individually
         imgs = images_for(b["sku"])
-        in_stock = b.get("in_stock","no").lower() == "yes"
-        badge = "" if in_stock else "Sold out"
+        badge = "" if in_stock(b) else "Sold out"
         href = f"p-{b['sku']}.html"
-        bangle_cards.append(R.card(href, imgs[0] if imgs else "", b["name"], money(b["price"]), badge))
+        bangle_cards.append(R.card(href, imgs[0] if imgs else "", b["name"], money(b["price"]), badge, pill_html(b)))
         (OUT / href).write_text(R.product_page(b, "bangle"), encoding="utf-8")
         pages_written += 1
 
-    # ---- Other jewellery ----
+    # ---- Other jewellery: only sell_solo=yes ----
     other_cards = []
     for o in other:
+        if (o.get("sell_solo","").lower() != "yes"):
+            continue
         imgs = images_for(o["sku"])
-        in_stock = o.get("in_stock","no").lower() == "yes"
-        badge = "" if in_stock else "Sold out"
+        badge = "" if in_stock(o) else "Sold out"
         href = f"p-{o['sku']}.html"
         cat = o.get("category","")
-        other_cards.append((cat, R.card(href, imgs[0] if imgs else "", o["name"], money(o["price"]), badge)))
+        other_cards.append((cat, R.card(href, imgs[0] if imgs else "", o["name"], money(o["price"]), badge, pill_html(o))))
         (OUT / href).write_text(R.product_page(o, "other"), encoding="utf-8")
         pages_written += 1
 

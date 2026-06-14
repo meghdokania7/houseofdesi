@@ -44,12 +44,12 @@ def page_shell(title, body, active=""):
 </footer>
 </body></html>"""
 
-def card(href, img, name, price_html, badge=""):
+def card(href, img, name, price_html, badge="", pill=""):
     badge_html = f'<span class="badge">{badge}</span>' if badge else ""
     img_html = (f'<img loading="lazy" src="{img}" alt="{e(name)}">'
                 if img else '<div class="noimg">photo coming soon</div>')
     return f"""<a class="card" href="{href}">
-  <div class="card-img">{img_html}{badge_html}</div>
+  <div class="card-img">{img_html}{badge_html}{pill}</div>
   <div class="card-body"><h3>{e(name)}</h3><div class="price">{price_html}</div></div>
 </a>"""
 

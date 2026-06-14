@@ -1,0 +1,8 @@
+stack_sku,bangle_sku,qty_required,short_flag
+STK-001,WB-001,1,0
+STK-001,RB-002,1,0
+STK-001,BB-001,1,0
+STK-002,WB-001,2,0
+STK-002,WB-002,1,0
+STK-003,RB-005,1,1
+STK-003,BB-001,1,0

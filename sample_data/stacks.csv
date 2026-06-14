@@ -1,4 +1,4 @@
-sku,name,component_skus,price,description,display_status
-STK-001,Festive Glow,"WB-001, RB-002, BB-001",1500,"A warm festive trio — terracotta wood, teal resin, and antique brass. Designed to layer effortlessly for celebrations.",live
-STK-002,Everyday Earth,"WB-001, WB-003",800,"Two earthy wooden tones for daily wear. Understated and light.",live
-STK-003,Amber Statement,"RB-005, BB-001",1100,"Bold amber resin anchored by antique brass. A head-turning pair.",sold_visible
+sku,name,price,display_status,pill_text,pill_colour,description
+STK-001,Festive Glow,1500,live,,,"A warm festive trio."
+STK-002,Everyday Earth,800,live,Bestseller,green,"Two earthy wooden tones for daily wear."
+STK-003,Amber Statement,1100,hidden,,,"Hidden example."
