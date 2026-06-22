@@ -20,9 +20,9 @@ SITE_URL = "https://meghdokania7.github.io/houseofdesi"
 # Google Sheets "Publish to web" CSV links go here once set up.
 # Until then the build falls back to local sample_data/ CSVs.
 SHEET_CSV = {
-    "bangles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTNL7tWpxHnM6xz_bFLWKBZRc-Gl7482RRPHkJ6Z1ySw_DHtrdJIFSI1Up5EQdigjA2mtvyprrsBzlN/pub?gid=1147584255&single=true&output=csv",   # paste published-CSV URL for the Bangles tab
-    "stacks":  "https://docs.google.com/spreadsheets/d/e/2PACX-1vTNL7tWpxHnM6xz_bFLWKBZRc-Gl7482RRPHkJ6Z1ySw_DHtrdJIFSI1Up5EQdigjA2mtvyprrsBzlN/pub?gid=951624219&single=true&output=csv",   # paste published-CSV URL for the Stacks tab
-    "other":   "https://docs.google.com/spreadsheets/d/e/2PACX-1vTNL7tWpxHnM6xz_bFLWKBZRc-Gl7482RRPHkJ6Z1ySw_DHtrdJIFSI1Up5EQdigjA2mtvyprrsBzlN/pub?gid=1712320965&single=true&output=csv",   # paste published-CSV URL for the Other tab
+    "bangles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vR1n5PlNaAaSbny4JbmgJat4x75qthaTadMkP-rlkyBkQ9YTcl4lsViBdhObr7FQgf0n2LMA4Q_l1ld/pub?gid=223657248&single=true&output=csv",   # paste published-CSV URL for the Bangles tab
+    "stacks":  "https://docs.google.com/spreadsheets/d/e/2PACX-1vR1n5PlNaAaSbny4JbmgJat4x75qthaTadMkP-rlkyBkQ9YTcl4lsViBdhObr7FQgf0n2LMA4Q_l1ld/pub?gid=1626741264&single=true&output=csv",   # paste published-CSV URL for the Stacks tab
+    "other":   "https://docs.google.com/spreadsheets/d/e/2PACX-1vR1n5PlNaAaSbny4JbmgJat4x75qthaTadMkP-rlkyBkQ9YTcl4lsViBdhObr7FQgf0n2LMA4Q_l1ld/pub?gid=1307545527&single=true&output=csv",   # paste published-CSV URL for the Other tab
 }
 
 # Currency symbol
